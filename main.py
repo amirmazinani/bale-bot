@@ -57,5 +57,10 @@ async def main() -> None:
         await bot.session.close()
 
 
+# Vercel Python functions require a top-level entrypoint symbol.
+# Export both names to satisfy common conventions.
+app = main
+handler = main
+
 if __name__ == "__main__":
     asyncio.run(main())
