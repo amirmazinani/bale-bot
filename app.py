@@ -1,9 +1,9 @@
 """
-bot.py
+app.py
 ======
 Application entrypoint. Run with:
 
-    python bot.py
+    python app.py
 
 Responsibilities:
   1. Configure logging.
