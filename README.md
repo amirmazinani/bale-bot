@@ -1,132 +1,156 @@
-# Bale ERP Marketing Bot
+# NovaERP Bale Bot
 
-Production-ready, **standalone** Python bot for [Bale Messenger](https://docs.bale.ai/) using **aiogram 3** with a configurable API base URL (`https://tapi.bale.ai`).
+A self-contained, production-ready Bale messenger bot for an ERP/CRM software
+company. Built on **aiogram 3.x**, pointed at **Bale's** Bot API
+(`https://tapi.bale.ai/bot...`) instead of Telegram's, via one configurable
+URL override — everything else is standard aiogram.
 
-No external admin panel or APIs — all menus, copy, and routes are hardcoded.
-
-## Features
-
-- **Mixed keyboard UX**
-  - Persistent **reply keyboard**: `🏠 Main Menu`, `📞 Contact / Support`
-  - **Inline keyboards** for nested menus (products, pricing, about, demo)
-- **Full navigation** with `🔙 Back` / `🏠 Main Menu` on every sub-screen
-- **Local activity tracking** — SQLite (`data/user_activity.db`) + append-only `user_activity.log`
-- **Rich HTML** messages; optional local **images** and **PDF brochures** per product
-
-## Project structure
-
-```
-bale/
-├── main.py                 # Entry point
-├── requirements.txt
-├── .env.example
-├── assets/
-│   ├── products/           # Optional PNG/JPG product images
-│   └── brochures/          # Optional PDF feature lists
-└── bot/
-    ├── config.py           # Token, Bale API base URL, paths
-    ├── callbacks.py        # Short callback_data tokens
-    ├── content.py          # Hardcoded ERP/CRM copy
-    ├── keyboards.py        # Reply + inline keyboard builders
-    ├── navigation.py       # ROUTES dictionary & Screen model
-    ├── activity_logger.py  # SQLite + text file logging
-    ├── menu_state.py       # Per-chat menu message_id tracking
-    ├── screen_renderer.py  # editMessage / sendPhoto / sendDocument
-    ├── middlewares.py
-    └── handlers/
-        ├── commands.py     # /start, /help, /menu
-        ├── reply_menu.py   # Bottom reply keyboard + free-text log
-        └── callbacks.py    # Inline button routing
-```
+No external admin panel, no external CRM/API calls, no database. All menus,
+copy, and pricing are hardcoded in `content/erp_content.py`.
 
 ## Quick start
 
-1. Create a bot via [Bale BotFather](https://ble.ir/botfather) and copy the token.
-
-2. Install dependencies:
-
 ```bash
-python -m venv .venv
-.venv\Scripts\activate
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env   # then edit .env with your real BALE_BOT_TOKEN
+export $(grep -v '^#' .env | xargs)   # or use a process manager / docker env
+python bot.py
 ```
 
-3. Configure environment:
+By default the bot runs in **long-polling** mode, which needs no public
+domain/SSL and is the simplest way to get started. Set `USE_WEBHOOK=true`
+(plus `WEBHOOK_HOST`) to switch to webhook mode for production.
 
-```bash
-copy .env.example .env
-# Edit .env and set BALE_BOT_TOKEN
+## How the Bale/Telegram switch works
+
+aiogram builds every API request URL from a `TelegramAPIServer` template.
+`bot_instance.py` swaps in Bale's templates:
+
+```python
+TelegramAPIServer(
+    base="https://tapi.bale.ai/bot{token}/{method}",
+    file="https://tapi.bale.ai/file/bot{token}/{path}",
+)
 ```
 
-4. Run:
+Change `BOT_API_BASE_URL_TEMPLATE` / `BOT_API_FILE_URL_TEMPLATE` in `.env` to
+Telegram's own URLs to run the exact same codebase against a real Telegram
+bot for local testing — nothing else in the project needs to change.
 
-```bash
-python main.py
-```
-
-## Configuration
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `BALE_BOT_TOKEN` | — | Bot token from BotFather |
-| `BALE_API_BASE_URL` | `https://tapi.bale.ai` | Bale Bot API base ([docs](https://docs.bale.ai/)) |
-| `ACTIVITY_DB_PATH` | `data/user_activity.db` | SQLite path for behavior analytics |
-| `ACTIVITY_LOG_PATH` | `user_activity.log` | Human-readable sequential log |
-
-## Menu tree & routing
-
-Callback tokens are defined in `bot/callbacks.py`. Screen content and keyboards are wired in `bot/navigation.py`:
-
-| Callback | Screen |
-|----------|--------|
-| `nav:main` | Main menu |
-| `nav:products` | Product list |
-| `prod:crm` | CRM details |
-| `prod:task` | Task & Project Management |
-| `prod:inv` | Inventory/Finance |
-| `nav:pricing` | Pricing plans |
-| `nav:about` | About us |
-| `nav:demo` | Request demo |
-| `demo:{key}` | Demo request for a product |
-| `nav:contact` | Contact / support |
-
-Inline transitions use `editMessageText` when possible to keep the chat clean; product screens with images send `sendPhoto` (+ optional `sendDocument` for PDFs).
-
-## Activity logging
-
-Every interaction is logged with UTC timestamp, `user_id`, and exact payload:
-
-- `command` — `/start`, `/help`, …
-- `reply_keyboard` — bottom menu presses
-- `inline_callback` — inline button `callback_data`
-- `free_text` — user-typed messages (e.g. demo follow-up details)
-
-**SQLite example** — user journey:
-
-```sql
-SELECT timestamp_utc, action_type, action_payload
-FROM user_activity
-WHERE user_id = 123456789
-ORDER BY id;
-```
-
-**Text log** line format:
+## Project layout
 
 ```
-2026-06-17T10:15:30+00:00 | user_id=123 | type=inline_callback | payload='nav:products' | screen=nav:products
+erp_bale_bot/
+├── bot.py                  # entrypoint: dispatcher assembly, polling/webhook
+├── bot_instance.py          # Bot construction w/ Bale API base-URL override
+├── config.py                 # all env-driven settings (tokens, URLs, paths)
+├── requirements.txt
+├── .env.example
+├── content/
+│   └── erp_content.py        # ALL hardcoded copy: products, pricing, about, demo text
+├── keyboards/
+│   ├── reply.py               # persistent bottom Reply Keyboard (2 buttons)
+│   └── inline.py               # every inline keyboard, one factory per screen
+├── handlers/
+│   ├── start.py                 # /start
+│   ├── reply_menu.py             # the 2 persistent reply-keyboard buttons
+│   ├── menu_router.py             # single CallbackQuery entrypoint + dispatch table
+│   ├── demo_capture.py             # captures the free-text demo-request reply
+│   └── fallback.py                  # catch-all for unrecognized text
+├── utils/
+│   ├── navigation.py                # route constants, parent-route graph, callback codec
+│   ├── fsm.py                        # tiny in-memory per-chat state (demo flow only)
+│   ├── screen.py                       # edit-in-place rendering helpers
+│   └── logging_setup.py                 # rotating file + console logging
+└── assets/                                # drop promo images / PDFs here (see assets/README.md)
 ```
 
-## Customization
+## Navigation architecture
 
-- Edit copy in `bot/content.py`
-- Add screens in `bot/navigation.py` and matching callbacks in `bot/callbacks.py`
-- Add keyboard rows in `bot/keyboards.py`
-- Drop images/PDFs under `assets/` (paths in `ProductContent`)
+Every inline button carries a `callback_data` string like `menu:products` or
+`menu:product_detail:crm`. `utils/navigation.py` defines:
 
-## Bale API note
+- **Route constants** (`ROUTE_MAIN_MENU`, `ROUTE_PRODUCTS_LIST`, …)
+- **`PARENT_ROUTES`**: a route → parent-route dict, i.e. the whole menu tree
+  as data. This is what every "🔙 Back" button is derived from, so adding a
+  new screen never requires manually re-wiring back-navigation elsewhere.
+- **`CallbackData.encode()/decode()`**: turns a `(route, arg)` pair into a
+  wire string and back, handling parameterized routes (e.g. which product).
 
-Bale’s Bot API is Telegram-compatible. Requests go to:
+`handlers/menu_router.py` has exactly **one** `@router.callback_query()`
+handler. It decodes the tapped button's route, looks it up in the
+`ROUTE_HANDLERS` dispatch dict, and calls the matching renderer function.
+Unknown/stale routes fall back to the main menu rather than doing nothing —
+the user can never get permanently stuck on a dead screen.
 
-`https://tapi.bale.ai/bot<token>/METHOD_NAME`
+### Menu tree (as implemented)
 
-This project sets that via aiogram’s `TelegramAPIServer.from_base()` in `bot/config.py`.
+```
+🏠 Main Menu
+├── 📦 Our Products
+│   ├── Customer Relationship Management (CRM)
+│   │     └── 🚀 Request Demo for this Product → demo capture (back → CRM page)
+│   ├── Task & Project Management
+│   │     └── 🚀 Request Demo for this Product
+│   └── Inventory/Finance System
+│         └── 🚀 Request Demo for this Product
+├── 💰 Pricing Plans
+│   ├── Starter
+│   ├── Professional
+│   └── Enterprise
+├── 🏢 About Us
+└── 🚀 Request a Demo (general) → demo capture (back → Main Menu)
+```
+
+Plus, always visible at the bottom: **🏠 Main Menu** and
+**📞 Contact / Support** (Reply Keyboard, never goes away).
+
+## Edit-in-place UX
+
+`utils/screen.py::render_screen()` calls `message.edit_text(...)` on the
+tapped message instead of sending a new one, so navigating through Products
+→ CRM → Back → Pricing → Starter etc. edits a single message in place and
+keeps the chat clean. If an edit fails (e.g. the original message was a
+photo), it safely falls back to sending a new message instead of crashing
+or leaving a stale screen.
+
+## Rich content hooks (images / PDFs)
+
+`content/erp_content.py`'s `Product` dataclass has `image_path` /
+`pdf_path` fields. `handlers/menu_router.py::_render_product_detail`
+already checks for the promo image on disk and sends it via
+`answer_photo()` right before the text detail card — drop a real PNG at the
+path in `assets/` and it activates automatically, no code changes. See
+`assets/README.md` for exact filenames and how to wire up the PDF
+feature-list button (left as a documented extension point).
+
+## Demo-request flow & local "CRM" logging
+
+Tapping "Request a Demo" puts that chat into an `awaiting_demo_info` state
+(`utils/fsm.py` — a plain in-memory dict, no Redis/DB needed for this scope).
+The next free-text message the user sends is captured by
+`handlers/demo_capture.py`, which:
+
+1. Logs a structured `DEMO_LEAD | ...` line via the standard logging module
+   (`utils/logging_setup.py` → rotating file at `logs/bot.log`, 5 MB × 5
+   backups). This is the bot's local lead-capture mechanism in place of an
+   external CRM API.
+2. Optionally forwards the lead to an admin's chat via `ADMIN_CHAT_ID`,
+   using the *same* Bale bot session — still fully self-contained, no
+   third-party HTTP calls.
+3. Resets the chat's FSM state and shows a thank-you screen.
+
+Tapping the persistent **🏠 Main Menu** button at any time also resets this
+state, so a user can never get stuck mid-flow.
+
+## Extending the menu
+
+To add a new top-level menu item:
+
+1. Add a `ROUTE_*` constant + its parent in `utils/navigation.py`.
+2. Add a button referencing it in the relevant `keyboards/inline.py` factory.
+3. Write a `_render_*` function in `handlers/menu_router.py` and register it
+   in `ROUTE_HANDLERS`.
+
+That's the entire contract — no other file needs to change.
