@@ -32,12 +32,12 @@ from utils.navigation import (
 )
 
 
-def _back_button(route: str, arg: str | None = None, label: str = "🔙 Back") -> InlineKeyboardButton:
+def _back_button(route: str, arg: str | None = None, label: str = "🔙 بازگشت") -> InlineKeyboardButton:
     return InlineKeyboardButton(text=label, callback_data=make_callback(route, arg))
 
 
 def _main_menu_button() -> InlineKeyboardButton:
-    return InlineKeyboardButton(text="🏠 Main Menu", callback_data=make_callback(ROUTE_MAIN_MENU))
+    return InlineKeyboardButton(text="🏠 منو اصلی", callback_data=make_callback(ROUTE_MAIN_MENU))
 
 
 # ---------------------------------------------------------------------------
@@ -46,10 +46,10 @@ def _main_menu_button() -> InlineKeyboardButton:
 
 def main_menu_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="📦 Our Products", callback_data=make_callback(ROUTE_PRODUCTS_LIST))],
-        [InlineKeyboardButton(text="💰 Pricing Plans", callback_data=make_callback(ROUTE_PRICING_LIST))],
-        [InlineKeyboardButton(text="🏢 About Us", callback_data=make_callback(ROUTE_ABOUT))],
-        [InlineKeyboardButton(text="🚀 Request a Demo", callback_data=make_callback(ROUTE_DEMO_INTRO))],
+        [InlineKeyboardButton(text="📦 محصولات ما", callback_data=make_callback(ROUTE_PRODUCTS_LIST))],
+        [InlineKeyboardButton(text="💰 پلن‌ها", callback_data=make_callback(ROUTE_PRICING_LIST))],
+        [InlineKeyboardButton(text="🏢 درباره ما", callback_data=make_callback(ROUTE_ABOUT))],
+        [InlineKeyboardButton(text="🚀 درخواست نمایش دمو", callback_data=make_callback(ROUTE_DEMO_INTRO))],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
@@ -76,11 +76,11 @@ def product_detail_keyboard(product_key: str) -> InlineKeyboardMarkup:
     rows = [
         [
             InlineKeyboardButton(
-                text="🚀 Request Demo for this Product",
+                text="🚀 درخواست نمایش دمو برای این محصول",
                 callback_data=make_callback(ROUTE_DEMO_FOR_PRODUCT, product_key),
             )
         ],
-        [_back_button(ROUTE_PRODUCTS_LIST, label="🔙 Back to Products")],
+        [_back_button(ROUTE_PRODUCTS_LIST, label="🔙 بازگشت به محصولات")],
         [_main_menu_button()],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -106,8 +106,8 @@ def pricing_list_keyboard() -> InlineKeyboardMarkup:
 
 def pricing_detail_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="🚀 Request a Demo", callback_data=make_callback(ROUTE_DEMO_INTRO))],
-        [_back_button(ROUTE_PRICING_LIST, label="🔙 Back to Plans")],
+        [InlineKeyboardButton(text="🚀 درخواست نمایش دمو", callback_data=make_callback(ROUTE_DEMO_INTRO))],
+        [_back_button(ROUTE_PRICING_LIST, label="🔙 بازگشت به پلن‌ها")],
         [_main_menu_button()],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -119,7 +119,7 @@ def pricing_detail_keyboard() -> InlineKeyboardMarkup:
 
 def about_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="📦 See Our Products", callback_data=make_callback(ROUTE_PRODUCTS_LIST))],
+        [InlineKeyboardButton(text="📦 محصولات ما", callback_data=make_callback(ROUTE_PRODUCTS_LIST))],
         [_main_menu_button()],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -131,7 +131,7 @@ def about_keyboard() -> InlineKeyboardMarkup:
 
 def demo_intro_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="📞 Skip — Contact Sales Directly", callback_data=make_callback(ROUTE_CONTACT))],
+        [InlineKeyboardButton(text="📞 رد شدن — مشاهده اطلاعات تماس", callback_data=make_callback(ROUTE_CONTACT))],
         [_main_menu_button()],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -139,8 +139,8 @@ def demo_intro_keyboard() -> InlineKeyboardMarkup:
 
 def demo_for_product_keyboard(product_key: str) -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="📞 Skip — Contact Sales Directly", callback_data=make_callback(ROUTE_CONTACT))],
-        [_back_button(ROUTE_PRODUCT_DETAIL, product_key, label="🔙 Back to Product")],
+        [InlineKeyboardButton(text="📞 رد شدن — مشاهده اطلاعات تماس", callback_data=make_callback(ROUTE_CONTACT))],
+        [_back_button(ROUTE_PRODUCT_DETAIL, product_key, label="🔙 بازگشت به محصول")],
         [_main_menu_button()],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
@@ -148,7 +148,7 @@ def demo_for_product_keyboard(product_key: str) -> InlineKeyboardMarkup:
 
 def demo_thankyou_keyboard() -> InlineKeyboardMarkup:
     rows = [
-        [InlineKeyboardButton(text="📦 Browse Products", callback_data=make_callback(ROUTE_PRODUCTS_LIST))],
+        [InlineKeyboardButton(text="📦 محصولات ما", callback_data=make_callback(ROUTE_PRODUCTS_LIST))],
         [_main_menu_button()],
     ]
     return InlineKeyboardMarkup(inline_keyboard=rows)
