@@ -76,7 +76,7 @@ async def _render_main_menu(callback: CallbackQuery, arg: str | None) -> None:
 
 
 async def _render_products_list(callback: CallbackQuery, arg: str | None) -> None:
-    await render_screen(callback, "<b>📦 Our Products</b>\nChoose a module to learn more:", products_list_keyboard())
+    await render_screen(callback, "<b>📦 محصولات ما</b>\nیک مورد را انتخاب کنید:", products_list_keyboard())
 
 
 async def _render_product_detail(callback: CallbackQuery, arg: str | None) -> None:
@@ -97,10 +97,10 @@ async def _render_product_detail(callback: CallbackQuery, arg: str | None) -> No
             from aiogram.types import FSInputFile
             await callback.message.answer_photo(
                 FSInputFile(str(image_path)),
-                caption=f"{product.title} — promotional overview",
+                caption=f"{product.title} — بررسی تبلیغاتی",
             )
         except Exception:
-            logger.exception("Failed to send promo image for product=%s", arg)
+            logger.exception("خطا در ارسال تصویر تبلیغاتی برای محصول=%s", arg)
     # else: no-op. Placeholder wiring only -- ship your real assets at the
     # path declared in content/erp_content.py (Product.image_path) and this
     # activates automatically with no code changes.
@@ -111,7 +111,7 @@ async def _render_product_detail(callback: CallbackQuery, arg: str | None) -> No
 async def _render_pricing_list(callback: CallbackQuery, arg: str | None) -> None:
     await render_screen(
         callback,
-        "<b>💰 Pricing Plans</b>\nChoose a plan to see what's included:",
+        "<b>💰 پلن‌های قیمت‌گذاری</b>\nیک پلن را انتخاب کنید تا ببینید چه چیزهایی در آن شامل می‌شود:",
         pricing_list_keyboard(),
     )
 
@@ -119,7 +119,7 @@ async def _render_pricing_list(callback: CallbackQuery, arg: str | None) -> None
 async def _render_pricing_detail(callback: CallbackQuery, arg: str | None) -> None:
     plan = PRICING_PLANS.get(arg or "")
     if plan is None:
-        logger.warning("Unknown pricing plan key in callback: %r", arg)
+        logger.warning("پلن قیمت‌گذاری ناشناخته در callback: %r", arg)
         await _render_pricing_list(callback, None)
         return
     await render_screen(callback, plan.summary_html, pricing_detail_keyboard())
@@ -141,11 +141,10 @@ async def _render_demo_for_product(callback: CallbackQuery, arg: str | None) -> 
         return
     fsm_store.set_awaiting_demo_info(callback.message.chat.id, product_key=arg)
     text = (
-        f"<b>🚀 Request a Demo — {product.title}</b>\n\n"
-        "Please reply with your <b>full name</b>, <b>company name</b>, and "
-        "<b>phone number</b> in a single message, for example:\n"
-        "<code>Jane Doe, Acme Co, +98 912 000 0000</code>\n\n"
-        "Or tap a button below."
+        f"<b>🚀 درخواست نمایش دمو — {product.title}</b>\n\n"
+        "لطفاً با نام کامل، نام شرکت و شماره تلفن خود در یک پیام پاسخ دهید, برای مثال:\n"
+        "<code>امیر امیری, تراز سامانه, +98 912 000 0000</code>\n\n"
+        "یا روی دکمه زیر کلیک کنید."
     )
     await render_screen(callback, text, demo_for_product_keyboard(arg))
 

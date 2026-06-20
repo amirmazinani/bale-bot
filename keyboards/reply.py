@@ -18,8 +18,8 @@ from __future__ import annotations
 
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
-BTN_MAIN_MENU = "🏠 Main Menu"
-BTN_CONTACT = "📞 Contact / Support"
+BTN_MAIN_MENU = "🏠 منو اصلی"
+BTN_CONTACT = "📞 تماس / پشتیبانی"
 
 
 def persistent_reply_keyboard() -> ReplyKeyboardMarkup:
@@ -30,5 +30,5 @@ def persistent_reply_keyboard() -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True,
         is_persistent=True,   # keeps it visible even after other prompts
-        input_field_placeholder="Type a message or use the menu below…",
+        input_field_placeholder="پیامی بنویس یا از منوی زیر استفاده کن…",
     )
