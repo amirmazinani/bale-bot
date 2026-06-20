@@ -18,17 +18,16 @@ from __future__ import annotations
 
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
-BTN_MAIN_MENU = "🏠 Main Menu"
-BTN_CONTACT = "📞 Contact / Support"
+from content.loader import REPLY_KEYBOARD_BUTTONS
+
+BTN_MAIN_MENU: str = REPLY_KEYBOARD_BUTTONS[0]["text"]
+BTN_CONTACT: str   = REPLY_KEYBOARD_BUTTONS[1]["text"]
 
 
 def persistent_reply_keyboard() -> ReplyKeyboardMarkup:
-    """The always-visible bottom keyboard, sent once and left in place."""
     return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text=BTN_MAIN_MENU), KeyboardButton(text=BTN_CONTACT)],
-        ],
+        keyboard=[[KeyboardButton(text=b["text"]) for b in REPLY_KEYBOARD_BUTTONS]],
         resize_keyboard=True,
-        is_persistent=True,   # keeps it visible even after other prompts
-        input_field_placeholder="Type a message or use the menu below…",
+        is_persistent=True,
+        input_field_placeholder="پیام بنویسید یا از منو استفاده کنید…",
     )

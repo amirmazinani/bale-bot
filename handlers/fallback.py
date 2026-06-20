@@ -19,8 +19,7 @@ import logging
 from aiogram import F, Router
 from aiogram.types import Message
 
-from content.erp_content import MAIN_MENU_PROMPT_HTML
-from keyboards.inline import main_menu_keyboard
+from content.loader import SCREENS
 
 logger = logging.getLogger(__name__)
 router = Router(name="fallback")
@@ -29,7 +28,6 @@ router = Router(name="fallback")
 @router.message(F.text)
 async def on_unrecognized_text(message: Message) -> None:
     logger.info("Unrecognized free text from user_id=%s: %r", message.from_user.id, message.text)
-    await message.answer(
-        "🤔 I didn't quite understand that. Here's the main menu:",
-    )
-    await message.answer(MAIN_MENU_PROMPT_HTML, reply_markup=main_menu_keyboard(), parse_mode="HTML")
+    s = SCREENS["main_menu"]
+    await message.answer("🤔 متوجه نشدم. منوی اصلی:")
+    await message.answer(s.text, reply_markup=s.keyboard, parse_mode="HTML")

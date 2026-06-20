@@ -26,25 +26,7 @@ from aiogram import Router
 from aiogram.types import CallbackQuery
 
 from config import settings
-from content.erp_content import (
-    ABOUT_US_HTML,
-    DEMO_INTRO_HTML,
-    MAIN_MENU_PROMPT_HTML,
-    PRICING_PLANS,
-    PRODUCTS,
-    contact_html,
-)
-from keyboards.inline import (
-    about_keyboard,
-    contact_keyboard,
-    demo_for_product_keyboard,
-    demo_intro_keyboard,
-    main_menu_keyboard,
-    pricing_detail_keyboard,
-    pricing_list_keyboard,
-    product_detail_keyboard,
-    products_list_keyboard,
-)
+from content.loader import PRICING_PLANS, PRODUCTS, SCREENS
 from utils.fsm import fsm_store
 from utils.navigation import (
     ROUTE_ABOUT,
@@ -72,11 +54,13 @@ RendererT = Callable[[CallbackQuery, str | None], Awaitable[None]]
 
 async def _render_main_menu(callback: CallbackQuery, arg: str | None) -> None:
     fsm_store.reset(callback.message.chat.id)
-    await render_screen(callback, MAIN_MENU_PROMPT_HTML, main_menu_keyboard())
+    s = SCREENS["main_menu"]
+    await render_screen(callback, s.text, s.keyboard)
 
 
 async def _render_products_list(callback: CallbackQuery, arg: str | None) -> None:
-    await render_screen(callback, "<b>📦 Our Products</b>\nChoose a module to learn more:", products_list_keyboard())
+    s = SCREENS["products_list"]
+    await render_screen(callback, s.text, s.keyboard)
 
 
 async def _render_product_detail(callback: CallbackQuery, arg: str | None) -> None:
@@ -86,34 +70,23 @@ async def _render_product_detail(callback: CallbackQuery, arg: str | None) -> No
         await _render_products_list(callback, None)
         return
 
-    # --- Rich content placeholder -------------------------------------
-    # If a promo image exists on disk, send it as its own message right
-    # before the detail card. This keeps the *editable* text card intact
-    # (you cannot edit a text message into a photo message in-place), while
-    # still feeling like "one screen" because it arrives immediately before.
     image_path = settings.ASSETS_DIR.parent / product.image_path if product.image_path else None
     if image_path and image_path.exists():
         try:
             from aiogram.types import FSInputFile
             await callback.message.answer_photo(
                 FSInputFile(str(image_path)),
-                caption=f"{product.title} — promotional overview",
+                caption=product.title,
             )
         except Exception:
             logger.exception("Failed to send promo image for product=%s", arg)
-    # else: no-op. Placeholder wiring only -- ship your real assets at the
-    # path declared in content/erp_content.py (Product.image_path) and this
-    # activates automatically with no code changes.
 
-    await render_screen(callback, product.description_html, product_detail_keyboard(arg))
+    await render_screen(callback, product.text, product.keyboard)
 
 
 async def _render_pricing_list(callback: CallbackQuery, arg: str | None) -> None:
-    await render_screen(
-        callback,
-        "<b>💰 Pricing Plans</b>\nChoose a plan to see what's included:",
-        pricing_list_keyboard(),
-    )
+    s = SCREENS["pricing_list"]
+    await render_screen(callback, s.text, s.keyboard)
 
 
 async def _render_pricing_detail(callback: CallbackQuery, arg: str | None) -> None:
@@ -122,16 +95,18 @@ async def _render_pricing_detail(callback: CallbackQuery, arg: str | None) -> No
         logger.warning("Unknown pricing plan key in callback: %r", arg)
         await _render_pricing_list(callback, None)
         return
-    await render_screen(callback, plan.summary_html, pricing_detail_keyboard())
+    await render_screen(callback, plan.text, plan.keyboard)
 
 
 async def _render_about(callback: CallbackQuery, arg: str | None) -> None:
-    await render_screen(callback, ABOUT_US_HTML, about_keyboard())
+    s = SCREENS["about"]
+    await render_screen(callback, s.text, s.keyboard)
 
 
 async def _render_demo_intro(callback: CallbackQuery, arg: str | None) -> None:
     fsm_store.set_awaiting_demo_info(callback.message.chat.id, product_key=None)
-    await render_screen(callback, DEMO_INTRO_HTML, demo_intro_keyboard())
+    s = SCREENS["demo_intro"]
+    await render_screen(callback, s.text, s.keyboard)
 
 
 async def _render_demo_for_product(callback: CallbackQuery, arg: str | None) -> None:
@@ -140,26 +115,15 @@ async def _render_demo_for_product(callback: CallbackQuery, arg: str | None) -> 
         await _render_demo_intro(callback, None)
         return
     fsm_store.set_awaiting_demo_info(callback.message.chat.id, product_key=arg)
-    text = (
-        f"<b>🚀 Request a Demo — {product.title}</b>\n\n"
-        "Please reply with your <b>full name</b>, <b>company name</b>, and "
-        "<b>phone number</b> in a single message, for example:\n"
-        "<code>Jane Doe, Acme Co, +98 912 000 0000</code>\n\n"
-        "Or tap a button below."
-    )
-    await render_screen(callback, text, demo_for_product_keyboard(arg))
+    s = SCREENS["demo_intro"]
+    text = f"<b>🚀 درخواست دمو — {product.title}</b>\n\n" + s.text.split("\n\n", 1)[-1]
+    await render_screen(callback, text, product.keyboard)
 
 
 async def _render_contact(callback: CallbackQuery, arg: str | None) -> None:
     fsm_store.reset(callback.message.chat.id)
-    text = contact_html(
-        settings.COMPANY_NAME,
-        settings.SUPPORT_PHONE,
-        settings.SUPPORT_EMAIL,
-        settings.SALES_BALE_USERNAME,
-        settings.COMPANY_WEBSITE,
-    )
-    await render_screen(callback, text, contact_keyboard())
+    s = SCREENS["contact"]
+    await render_screen(callback, s.text, s.keyboard)
 
 
 # ---------------------------------------------------------------------------

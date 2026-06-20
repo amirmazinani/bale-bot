@@ -44,6 +44,20 @@ ROUTE_DEMO_INTRO = "menu:demo_intro"
 ROUTE_DEMO_FOR_PRODUCT = "menu:demo_for_product"  # requires :<product_key>
 ROUTE_CONTACT = "menu:contact"
 
+# Lookup table used by content/loader.py to resolve string keys from JSON
+# to the canonical route constants above.
+ROUTE_MAP: dict[str, str] = {
+    "main_menu":        ROUTE_MAIN_MENU,
+    "products_list":    ROUTE_PRODUCTS_LIST,
+    "product_detail":   ROUTE_PRODUCT_DETAIL,
+    "pricing_list":     ROUTE_PRICING_LIST,
+    "pricing_detail":   ROUTE_PRICING_DETAIL,
+    "about":            ROUTE_ABOUT,
+    "demo_intro":       ROUTE_DEMO_INTRO,
+    "demo_for_product": ROUTE_DEMO_FOR_PRODUCT,
+    "contact":          ROUTE_CONTACT,
+}
+
 # Parent-route table: child -> parent. ROUTE_MAIN_MENU has no parent (root).
 # NOTE: ROUTE_PRODUCT_DETAIL / ROUTE_PRICING_DETAIL are parameterized routes;
 # their "back" target is always the corresponding list screen regardless of

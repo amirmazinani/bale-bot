@@ -27,8 +27,7 @@ from aiogram import Bot, F, Router
 from aiogram.types import Message
 
 from config import settings
-from content.erp_content import DEMO_THANKYOU_HTML, PRODUCTS
-from keyboards.inline import demo_thankyou_keyboard
+from content.loader import PRODUCTS, SCREENS
 from utils.fsm import fsm_store
 
 logger = logging.getLogger(__name__)
@@ -79,4 +78,5 @@ async def on_demo_info_provided(message: Message, bot: Bot) -> None:
             logger.exception("Failed to forward demo lead to admin chat.")
 
     fsm_store.reset(message.chat.id)
-    await message.answer(DEMO_THANKYOU_HTML, reply_markup=demo_thankyou_keyboard(), parse_mode="HTML")
+    s = SCREENS["demo_thankyou"]
+    await message.answer(s.text, reply_markup=s.keyboard, parse_mode="HTML")
