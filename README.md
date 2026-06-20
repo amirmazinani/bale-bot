@@ -1,4 +1,4 @@
-# NovaERP Bale Bot
+# Bale Bot
 
 A self-contained, production-ready Bale messenger bot for an ERP/CRM software
 company. Built on **aiogram 3.x**, pointed at **Bale's** Bot API

@@ -54,11 +54,11 @@ class Settings:
     WEBAPP_PORT: int = int(os.getenv("WEBAPP_PORT", "8080"))
 
     # --- Business / support contact info (hardcoded ERP company info) -----
-    COMPANY_NAME: str = "NovaERP Solutions"
-    SUPPORT_PHONE: str = "+98 21 9100 0000"
-    SUPPORT_EMAIL: str = "support@novaerp.example.com"
-    SALES_BALE_USERNAME: str = "@novaerp_sales"
-    COMPANY_WEBSITE: str = "https://novaerp.example.com"
+    COMPANY_NAME: str = "تراز سامانه"
+    SUPPORT_PHONE: str = "+982191000000"
+    SUPPORT_EMAIL: str = "support@tarazerp.example.com"
+    SALES_BALE_USERNAME: str = "@tarazerp_sales"
+    COMPANY_WEBSITE: str = "https://tarazerp.example.com"
 
     # --- Paths --------------------------------------------------------
     BASE_DIR: Path = field(default_factory=lambda: Path(__file__).resolve().parent)

@@ -92,7 +92,7 @@ async def _render_pricing_list(callback: CallbackQuery, arg: str | None) -> None
 async def _render_pricing_detail(callback: CallbackQuery, arg: str | None) -> None:
     plan = PRICING_PLANS.get(arg or "")
     if plan is None:
-        logger.warning("Unknown pricing plan key in callback: %r", arg)
+        logger.warning("پلن قیمت‌گذاری ناشناخته در callback: %r", arg)
         await _render_pricing_list(callback, None)
         return
     await render_screen(callback, plan.text, plan.keyboard)
