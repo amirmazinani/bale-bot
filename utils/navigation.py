@@ -43,6 +43,7 @@ ROUTE_ABOUT = "menu:about"
 ROUTE_DEMO_INTRO = "menu:demo_intro"
 ROUTE_DEMO_FOR_PRODUCT = "menu:demo_for_product"  # requires :<product_key>
 ROUTE_CONTACT = "menu:contact"
+ROUTE_BLOG = "menu:blog"
 
 # Lookup table used by content/loader.py to resolve string keys from JSON
 # to the canonical route constants above.
@@ -56,6 +57,7 @@ ROUTE_MAP: dict[str, str] = {
     "demo_intro":       ROUTE_DEMO_INTRO,
     "demo_for_product": ROUTE_DEMO_FOR_PRODUCT,
     "contact":          ROUTE_CONTACT,
+    "blog":             ROUTE_BLOG,  # اضافه شده
 }
 
 # Parent-route table: child -> parent. ROUTE_MAIN_MENU has no parent (root).
@@ -72,6 +74,7 @@ PARENT_ROUTES: dict[str, str] = {
     ROUTE_DEMO_INTRO: ROUTE_MAIN_MENU,
     ROUTE_DEMO_FOR_PRODUCT: ROUTE_PRODUCT_DETAIL,  # back goes to that product's page
     ROUTE_CONTACT: ROUTE_MAIN_MENU,
+    ROUTE_BLOG: ROUTE_MAIN_MENU,  # اضافه شده
 }
 
 
@@ -114,6 +117,7 @@ _ALL_ROUTES: tuple[str, ...] = (
     ROUTE_DEMO_INTRO,
     ROUTE_DEMO_FOR_PRODUCT,
     ROUTE_CONTACT,
+    ROUTE_BLOG,  # اضافه شده
 )
 
 

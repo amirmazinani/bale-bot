@@ -9,7 +9,7 @@ from aiohttp import web
 
 from bot_instance import build_bot
 from config import settings
-from handlers import demo_capture, fallback, menu_router, reply_menu, start
+from handlers import demo_capture, dynamic_menu_router, fallback, reply_menu, start
 from utils.logging_setup import configure_logging
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ def build_dispatcher() -> Dispatcher:
     dp.include_router(start.router)
     dp.include_router(reply_menu.router)
     dp.include_router(demo_capture.router)
-    dp.include_router(menu_router.router)
+    dp.include_router(dynamic_menu_router.router)  # استفاده از سیستم داینامیک
     dp.include_router(fallback.router)  # must stay last
     return dp
 

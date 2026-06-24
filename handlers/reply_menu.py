@@ -21,7 +21,8 @@ from aiogram import F, Router
 from aiogram.types import Message
 
 from content.loader import SCREENS
-from keyboards.reply import BTN_CONTACT, BTN_MAIN_MENU
+from keyboards.reply import REPLY_BUTTON_TEXTS
+from utils.dynamic_navigation import get_route_for_screen
 from utils.fsm import fsm_store
 from utils.screen import send_screen
 
@@ -29,32 +30,47 @@ logger = logging.getLogger(__name__)
 router = Router(name="reply_menu")
 
 
-@router.message(F.text == BTN_MAIN_MENU)
-async def on_main_menu_button(message: Message) -> None:
-    logger.info("user_id=%s opened Main Menu via reply keyboard (text=%r)", message.from_user.id, message.text)
+# Dynamic handler for all reply keyboard buttons
+@router.message(F.text.in_(REPLY_BUTTON_TEXTS))
+async def on_reply_button(message: Message) -> None:
+    """Handle any reply keyboard button tap dynamically."""
+    logger.info("user_id=%s tapped reply button (text=%r)", message.from_user.id, message.text)
+    
+    # Find the button from REPLY_KEYBOARD_BUTTONS
+    from content.loader import REPLY_KEYBOARD_BUTTONS
+    
+    for button in REPLY_KEYBOARD_BUTTONS:
+        if button["text"] == message.text:
+            action = button.get("action")
+            route_key = button.get("route")
+            
+            # Handle action-based buttons
+            if action == "main_menu":
+                fsm_store.reset(message.chat.id)
+                s = SCREENS["main_menu"]
+                await send_screen(message, s.text, s.keyboard)
+                return
+            elif action == "contact":
+                s = SCREENS["contact"]
+                await send_screen(message, s.text, s.keyboard)
+                return
+            
+            # Handle route-based buttons dynamically
+            elif route_key:
+                # Get the screen if it exists
+                if route_key in SCREENS:
+                    s = SCREENS[route_key]
+                    await send_screen(message, s.text, s.keyboard)
+                    return
+                else:
+                    logger.warning("Route key %r not found in SCREENS", route_key)
+            
+            # Handle unknown actions
+            else:
+                logger.warning("Unknown action=%r for reply button text=%r", 
+                             action, message.text)
+                
+    # If no matching button found, show main menu
     fsm_store.reset(message.chat.id)
     s = SCREENS["main_menu"]
-    await send_screen(message, s.text, s.keyboard)
-
-
-@router.message(F.text == BTN_CONTACT)
-async def on_contact_button(message: Message) -> None:
-    logger.info("user_id=%s opened Contact via reply keyboard (text=%r)", message.from_user.id, message.text)
-    s = SCREENS["contact"]
-    await send_screen(message, s.text, s.keyboard)
-
-
-# Fallback in case the button text changed but constants haven't been reloaded
-@router.message(F.text.in_(["🏠 Main Menu", "🏠 منوی اصلی"]))
-async def on_main_menu_fallback(message: Message) -> None:
-    logger.warning("Main menu fallback triggered for text=%r", message.text)
-    fsm_store.reset(message.chat.id)
-    s = SCREENS["main_menu"]
-    await send_screen(message, s.text, s.keyboard)
-
-
-@router.message(F.text.in_(["📞 Contact / Support", "📞 تماس / پشتیبانی"]))
-async def on_contact_fallback(message: Message) -> None:
-    logger.warning("Contact fallback triggered for text=%r", message.text)
-    s = SCREENS["contact"]
     await send_screen(message, s.text, s.keyboard)

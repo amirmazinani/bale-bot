@@ -22,7 +22,7 @@ from typing import Any
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from utils.navigation import make_callback, ROUTE_MAP
+from utils.dynamic_navigation import make_callback, get_route_for_screen
 
 _RAW: dict[str, Any] = json.loads(
     (Path(__file__).parent / "content.json").read_text(encoding="utf-8")
@@ -83,7 +83,7 @@ def _build_keyboard(
                     p = (products or {})[key]
                     rows.append([InlineKeyboardButton(
                         text=p.short_title,
-                        callback_data=make_callback(ROUTE_MAP["product_detail"], key),
+                        callback_data=make_callback(get_route_for_screen("product_detail"), key),
                     )])
                 continue  # skip appending to built_row
 
@@ -92,13 +92,15 @@ def _build_keyboard(
                     pl = (plans or {})[key]
                     rows.append([InlineKeyboardButton(
                         text=pl.name,
-                        callback_data=make_callback(ROUTE_MAP["pricing_detail"], key),
+                        callback_data=make_callback(get_route_for_screen("pricing_detail"), key),
                     )])
                 continue
 
             route_key = btn.get("route")
             arg = btn.get("arg")
-            route = ROUTE_MAP.get(route_key, route_key) if route_key else None
+            
+            # Get route dynamically
+            route = get_route_for_screen(route_key) if route_key else None
             callback = make_callback(route, arg) if route else None
 
             url = btn.get("url")

@@ -30,6 +30,7 @@ from content.loader import PRICING_PLANS, PRODUCTS, SCREENS
 from utils.fsm import fsm_store
 from utils.navigation import (
     ROUTE_ABOUT,
+    ROUTE_BLOG,           # اضافه شده
     ROUTE_CONTACT,
     ROUTE_DEMO_FOR_PRODUCT,
     ROUTE_DEMO_INTRO,
@@ -126,6 +127,12 @@ async def _render_contact(callback: CallbackQuery, arg: str | None) -> None:
     await render_screen(callback, s.text, s.keyboard)
 
 
+async def _render_blog(callback: CallbackQuery, arg: str | None) -> None:
+    """رندر صفحه وبلاگ"""
+    s = SCREENS["blog"]
+    await render_screen(callback, s.text, s.keyboard)
+
+
 # ---------------------------------------------------------------------------
 # Dispatch table: route -> renderer
 # ---------------------------------------------------------------------------
@@ -140,6 +147,7 @@ ROUTE_HANDLERS: dict[str, RendererT] = {
     ROUTE_DEMO_INTRO: _render_demo_intro,
     ROUTE_DEMO_FOR_PRODUCT: _render_demo_for_product,
     ROUTE_CONTACT: _render_contact,
+    ROUTE_BLOG: _render_blog,  # اضافه شده
 }
 
 

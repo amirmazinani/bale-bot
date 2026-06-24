@@ -20,11 +20,12 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 from content.loader import REPLY_KEYBOARD_BUTTONS
 
-BTN_MAIN_MENU: str = REPLY_KEYBOARD_BUTTONS[1]["text"]
-BTN_CONTACT: str   = REPLY_KEYBOARD_BUTTONS[0]["text"]
+# Get button texts for handlers
+REPLY_BUTTON_TEXTS: list[str] = [b["text"] for b in REPLY_KEYBOARD_BUTTONS]
 
 
 def persistent_reply_keyboard() -> ReplyKeyboardMarkup:
+    # Create a single row with all buttons
     return ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text=b["text"]) for b in REPLY_KEYBOARD_BUTTONS]],
         resize_keyboard=True,

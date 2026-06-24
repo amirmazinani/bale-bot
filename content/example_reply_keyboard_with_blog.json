@@ -1,0 +1,41 @@
+{
+  "reply_keyboard": {
+    "buttons": [
+      {
+        "text": "📞 تماس",
+        "action": "contact"
+      },
+      {
+        "text": "🏠 خانه",
+        "action": "main_menu"
+      },
+      {
+        "text": "📝 وبلاگ",
+        "route": "blog"  // این کار میکنه چون در reply_menu.py پشتیبانی شده
+      },
+      {
+        "text": "⭐ ویژه",
+        "route": "special_products"  // نیاز به توسعه کد
+      }
+    ]
+  },
+  "screens": {
+    "blog": {
+      "text": "📝 وبلاگ تراز\\n\\nآخرین مقالات و راهنماییهای ما...",
+      "buttons": [
+        [
+          {
+            "text": "🌐 وبسایت ما",
+            "url": "https://taraz.example.com/blog"
+          }
+        ],
+        [
+          {
+            "text": "🏠 خانه",
+            "route": "main_menu"
+          }
+        ]
+      ]
+    }
+  }
+}
