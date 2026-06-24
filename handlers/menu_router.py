@@ -116,7 +116,7 @@ async def _render_demo_for_product(callback: CallbackQuery, arg: str | None) -> 
         return
     fsm_store.set_awaiting_demo_info(callback.message.chat.id, product_key=arg)
     s = SCREENS["demo_intro"]
-    text = f"<b>🚀 درخواست دمو — {product.title}</b>\n\n" + s.text.split("\n\n", 1)[-1]
+    text = f"{product.title}\n\n" + s.text.split("\n\n", 1)[-1]
     await render_screen(callback, text, product.keyboard)
 
 
