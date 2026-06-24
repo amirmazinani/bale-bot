@@ -1,156 +1,264 @@
-# Bale Bot
+# Bale Bot - ERP/CRM منوی خودکار
 
-A self-contained, production-ready Bale messenger bot for an ERP/CRM software
-company. Built on **aiogram 3.x**, pointed at **Bale's** Bot API
-(`https://tapi.bale.ai/bot...`) instead of Telegram's, via one configurable
-URL override — everything else is standard aiogram.
+بات پیام‌رسان Bale برای شرکت‌های نرم‌افزاری ERP/CRM. سیستم **کاملاً داینامیک** - فقط فایل JSON را ویرایش کنید، کدنویسی مورد نیاز نیست!
 
-No external admin panel, no external CRM/API calls, no database. All menus,
-copy, and pricing are hardcoded in `content/erp_content.py`.
+## 🚀 شروع سریع
 
-## Quick start
+### پیش‌نیازها
+- Python 3.9+
+- Bale Bot Token (از [@bale_iris_bot](https://t.me/bale_iris_bot) در Bale بگیرید)
+
+### نصب و اجرا
 
 ```bash
-python -m venv venv && source venv/bin/activate
+# 1. مخزن را clone کنید
+git clone <repo-url>
+cd bale-bot
+
+# 2. محیط مجازی ایجاد کنید
+python -m venv venv
+source venv/bin/activate  # روی Windows: venv\Scripts\activate
+
+# 3. وابستگی‌ها را نصب کنید
 pip install -r requirements.txt
-cp .env.example .env   # then edit .env with your real BALE_BOT_TOKEN
-export $(grep -v '^#' .env | xargs)   # or use a process manager / docker env
-python bot.py
+
+# 4. فایل محیط را تنظیم کنید
+cp .env.example .env
+# حالا .env را ویرایش کنید و BALE_BOT_TOKEN را وارد کنید
+
+# 5. بات را اجرا کنید
+python main.py
 ```
 
-By default the bot runs in **long-polling** mode, which needs no public
-domain/SSL and is the simplest way to get started. Set `USE_WEBHOOK=true`
-(plus `WEBHOOK_HOST`) to switch to webhook mode for production.
-
-## How the Bale/Telegram switch works
-
-aiogram builds every API request URL from a `TelegramAPIServer` template.
-`bot_instance.py` swaps in Bale's templates:
-
-```python
-TelegramAPIServer(
-    base="https://tapi.bale.ai/bot{token}/{method}",
-    file="https://tapi.bale.ai/file/bot{token}/{path}",
-)
-```
-
-Change `BOT_API_BASE_URL_TEMPLATE` / `BOT_API_FILE_URL_TEMPLATE` in `.env` to
-Telegram's own URLs to run the exact same codebase against a real Telegram
-bot for local testing — nothing else in the project needs to change.
-
-## Project layout
+## 📁 ساختار پروژه
 
 ```
-erp_bale_bot/
-├── bot.py                  # entrypoint: dispatcher assembly, polling/webhook
-├── bot_instance.py          # Bot construction w/ Bale API base-URL override
-├── config.py                 # all env-driven settings (tokens, URLs, paths)
-├── requirements.txt
-├── .env.example
+bale-bot/
+├── main.py                  # نقطه ورود بات
+├── bot_instance.py          # تنظیم Bale API
+├── config.py                # تنظیمات (از محیط بخوانده شده)
+├── .env.example             # مثال تنظیمات محیط
+├── requirements.txt         # وابستگی‌های Python
+│
 ├── content/
-│   └── erp_content.py        # ALL hardcoded copy: products, pricing, about, demo text
-├── keyboards/
-│   ├── reply.py               # persistent bottom Reply Keyboard (2 buttons)
-│   └── inline.py               # every inline keyboard, one factory per screen
+│   ├── content.json         # ✨ **فایل اصلی - همه محتوا اینجا تعریف می‌شود**
+│   ├── loader.py            # پردازش content.json
+│   └── __init__.py
+│
 ├── handlers/
-│   ├── start.py                 # /start
-│   ├── reply_menu.py             # the 2 persistent reply-keyboard buttons
-│   ├── menu_router.py             # single CallbackQuery entrypoint + dispatch table
-│   ├── demo_capture.py             # captures the free-text demo-request reply
-│   └── fallback.py                  # catch-all for unrecognized text
+│   ├── dynamic_menu_router.py   # روتینگ منوها
+│   ├── reply_menu.py             # دکمه‌های ریپلای کیبورد
+│   ├── demo_capture.py           # جمع‌آوری درخواست دمو
+│   ├── start.py                  # دستور /start
+│   ├── fallback.py               # پیام‌های ناشناخته
+│   └── __init__.py
+│
+├── keyboards/
+│   ├── reply.py             # دکمه‌های پایین صفحه
+│   └── __init__.py
+│
 ├── utils/
-│   ├── navigation.py                # route constants, parent-route graph, callback codec
-│   ├── fsm.py                        # tiny in-memory per-chat state (demo flow only)
-│   ├── screen.py                       # edit-in-place rendering helpers
-│   └── logging_setup.py                 # rotating file + console logging
-└── assets/                                # drop promo images / PDFs here (see assets/README.md)
+│   ├── dynamic_navigation.py # مسیریابی خودکار
+│   ├── fsm.py                # مدیریت وضعیت چت
+│   ├── screen.py             # رندر صفحات
+│   ├── logging_setup.py      # تنظیم لاگینگ
+│   └── __init__.py
+│
+├── assets/                   # عکس‌ها و PDF‌های محصولات
+│   ├── crm_promo.png
+│   ├── tasks_promo.png
+│   └── finance_promo.png
+│
+├── logs/                     # فایل‌های لاگ
+│   └── bot.log
+│
+└── docs/
+    ├── README.md             # این فایل
+    ├── QUICK_START.md        # شروع سریع (فارسی)
+    ├── CONFIGURATION.md      # راهنمای content.json
+    └── EXTENDING.md          # افزودن ویژگی‌های جدید
 ```
 
-## Navigation architecture
+## 🎯 چگونه کار می‌کند
 
-Every inline button carries a `callback_data` string like `menu:products` or
-`menu:product_detail:crm`. `utils/navigation.py` defines:
+### سیستم داینامیک
 
-- **Route constants** (`ROUTE_MAIN_MENU`, `ROUTE_PRODUCTS_LIST`, …)
-- **`PARENT_ROUTES`**: a route → parent-route dict, i.e. the whole menu tree
-  as data. This is what every "🔙 Back" button is derived from, so adding a
-  new screen never requires manually re-wiring back-navigation elsewhere.
-- **`CallbackData.encode()/decode()`**: turns a `(route, arg)` pair into a
-  wire string and back, handling parameterized routes (e.g. which product).
+تمام محتوا (منوها، صفحات، دکمه‌ها، متن‌ها) در **یک فایل JSON** تعریف می‌شوند:
 
-`handlers/menu_router.py` has exactly **one** `@router.callback_query()`
-handler. It decodes the tapped button's route, looks it up in the
-`ROUTE_HANDLERS` dispatch dict, and calls the matching renderer function.
-Unknown/stale routes fall back to the main menu rather than doing nothing —
-the user can never get permanently stuck on a dead screen.
-
-### Menu tree (as implemented)
-
-```
-🏠 Main Menu
-├── 📦 Our Products
-│   ├── Customer Relationship Management (CRM)
-│   │     └── 🚀 Request Demo for this Product → demo capture (back → CRM page)
-│   ├── Task & Project Management
-│   │     └── 🚀 Request Demo for this Product
-│   └── Inventory/Finance System
-│         └── 🚀 Request Demo for this Product
-├── 💰 Pricing Plans
-│   ├── Starter
-│   ├── Professional
-│   └── Enterprise
-├── 🏢 About Us
-└── 🚀 Request a Demo (general) → demo capture (back → Main Menu)
+```json
+{
+  "company": {
+    "name": "نام شرکت",
+    "phone": "+98...",
+    "email": "email@...",
+    ...
+  },
+  "screens": {
+    "main_menu": {
+      "text": "سلام! یک گزینه را انتخاب کنید:",
+      "buttons": [...]
+    },
+    "about": {
+      "text": "درباره ما...",
+      "parent": "main_menu",
+      "buttons": [...]
+    }
+  },
+  "products": [...],
+  "pricing": [...]
+}
 ```
 
-Plus, always visible at the bottom: **🏠 Main Menu** and
-**📞 Contact / Support** (Reply Keyboard, never goes away).
+### جریان درخواست
 
-## Edit-in-place UX
+```
+👤 کاربر
+    ↓ [بات را شروع می‌کند]
+📱 صفحه خوش‌آمد
+    ↓ [روی دکمه کلیک می‌کند]
+🔄 Callback Query
+    ↓ [dynamic_menu_router.py پردازش می‌کند]
+📄 صفحه جدید (edit-in-place)
+```
 
-`utils/screen.py::render_screen()` calls `message.edit_text(...)` on the
-tapped message instead of sending a new one, so navigating through Products
-→ CRM → Back → Pricing → Starter etc. edits a single message in place and
-keeps the chat clean. If an edit fails (e.g. the original message was a
-photo), it safely falls back to sending a new message instead of crashing
-or leaving a stale screen.
+## 📝 استفاده
 
-## Rich content hooks (images / PDFs)
+### راهنمای سریع
 
-`content/erp_content.py`'s `Product` dataclass has `image_path` /
-`pdf_path` fields. `handlers/menu_router.py::_render_product_detail`
-already checks for the promo image on disk and sends it via
-`answer_photo()` right before the text detail card — drop a real PNG at the
-path in `assets/` and it activates automatically, no code changes. See
-`assets/README.md` for exact filenames and how to wire up the PDF
-feature-list button (left as a documented extension point).
+راهنمای کامل برای:
+- ✅ [شروع سریع](QUICK_START.md) - تغییرات ساده
+- ✅ [کانفیگ‌ها](CONFIGURATION.md) - ساختار content.json
+- ✅ [گسترش سیستم](EXTENDING.md) - اضافه کردن ویژگی‌های جدید
 
-## Demo-request flow & local "CRM" logging
+### مثال سریع: اضافه کردن صفحه FAQ
 
-Tapping "Request a Demo" puts that chat into an `awaiting_demo_info` state
-(`utils/fsm.py` — a plain in-memory dict, no Redis/DB needed for this scope).
-The next free-text message the user sends is captured by
-`handlers/demo_capture.py`, which:
+**۱. صفحه را به `content.json` اضافه کنید:**
 
-1. Logs a structured `DEMO_LEAD | ...` line via the standard logging module
-   (`utils/logging_setup.py` → rotating file at `logs/bot.log`, 5 MB × 5
-   backups). This is the bot's local lead-capture mechanism in place of an
-   external CRM API.
-2. Optionally forwards the lead to an admin's chat via `ADMIN_CHAT_ID`,
-   using the *same* Bale bot session — still fully self-contained, no
-   third-party HTTP calls.
-3. Resets the chat's FSM state and shows a thank-you screen.
+```json
+"screens": {
+  "faq": {
+    "text": "❓ سوالات متداول\n\nموضوع را انتخاب کنید:",
+    "parent": "main_menu",
+    "buttons": [
+      [{"text": "💰 قیمتها", "route": "contact"}],
+      [{"text": "🏠 برگشت", "route": "main_menu"}]
+    ]
+  }
+}
+```
 
-Tapping the persistent **🏠 Main Menu** button at any time also resets this
-state, so a user can never get stuck mid-flow.
+**۲. دکمه را به منوی اصلی اضافه کنید:**
 
-## Extending the menu
+```json
+"main_menu": {
+  "buttons": [
+    // ... دکمه‌های قبلی
+    [{"text": "❓ سوالات متداول", "route": "faq"}]
+  ]
+}
+```
 
-To add a new top-level menu item:
+**۳. بات را ریاستارت کنید:**
 
-1. Add a `ROUTE_*` constant + its parent in `utils/navigation.py`.
-2. Add a button referencing it in the relevant `keyboards/inline.py` factory.
-3. Write a `_render_*` function in `handlers/menu_router.py` and register it
-   in `ROUTE_HANDLERS`.
+```bash
+python main.py
+```
 
-That's the entire contract — no other file needs to change.
+**بس! صفحه جدید کار می‌کند.** ✨
+
+## 🔧 ویژگی‌های کلیدی
+
+| ویژگی | توضیح |
+|--------|--------|
+| **داینامیک** | بدون کدنویسی - فقط JSON |
+| **خودکار** | مسیرها، دکمه‌های back، وضعیت‌ها خودکار |
+| **تمیز** | یک پیام، ویرایش‌ در جا |
+| **محکم** | بدون پایگاه‌داده، بدون API خارجی |
+| **چند زبان** | فارسی، انگلیسی، ... |
+
+## 📊 ساختار منو
+
+```
+🏠 منوی اصلی
+├── 📦 محصولات
+│   ├── CRM
+│   ├── مدیریت وظایف
+│   └── انبار/مالی
+├── 💰 قیمت‌ها
+│   ├── استارتر
+│   ├── حرفه‌ای
+│   └── سازمانی
+├── 🏢 درباره ما
+├── 📝 وبلاگ
+└── 🚀 درخواست دمو
+
++ هر وقت در هر جا:
+  📞 تماس/پشتیبانی (پایین صفحه)
+  🏠 منوی اصلی (پایین صفحه)
+```
+
+## 🔄 Webhook vs Polling
+
+### Polling (پیش‌فرض)
+```bash
+# بدون نیاز به دامنه عمومی
+python main.py
+```
+
+### Webhook (تولید)
+```bash
+USE_WEBHOOK=true \
+WEBHOOK_HOST=https://yourdomain.com \
+WEBHOOK_PATH=/webhook/bale \
+python main.py
+```
+
+## 🧪 تست
+
+```bash
+# تمام تست‌ها
+pytest tests/
+
+# تنها یک تست
+pytest tests/test_navigation.py::test_route_generation
+```
+
+## 🐛 عیب‌یابی
+
+### بات شروع نمی‌شود
+```
+❌ Error: BOT_TOKEN not found
+✅ حل: BALE_BOT_TOKEN را در .env قرار دهید
+```
+
+### صفحه نمایش داده نمی‌شود
+```
+❌ Error: Screen not found
+✅ حل: screen_key را در content.json بررسی کنید
+```
+
+### دکمه کار نمی‌کند
+```
+❌ Error: Unknown route
+✅ حل: route را درست نوشته‌اید؟ screen وجود دارد؟
+```
+
+## 📚 منابع
+
+- [Bale Docs](https://docs.bale.ai/)
+- [aiogram 3.x Docs](https://docs.aiogram.dev/)
+- [راهنمای سریع](QUICK_START.md)
+- [تنظیمات](CONFIGURATION.md)
+- [گسترش](EXTENDING.md)
+
+## 📄 مجوز
+
+MIT License - می‌تونید از این پروژه برای هر منظوری استفاده کنید.
+
+## 🤝 مشارکت
+
+مشکلاتی پیدا کردید؟ یک Issue باز کنید یا PR ارسال کنید!
+
+---
+
+**نیاز کمک دارید؟** ببینید [QUICK_START.md](QUICK_START.md) 👈
