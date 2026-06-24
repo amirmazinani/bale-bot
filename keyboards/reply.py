@@ -20,8 +20,8 @@ from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
 from content.loader import REPLY_KEYBOARD_BUTTONS
 
-BTN_MAIN_MENU: str = REPLY_KEYBOARD_BUTTONS[0]["text"]
-BTN_CONTACT: str   = REPLY_KEYBOARD_BUTTONS[1]["text"]
+BTN_MAIN_MENU: str = REPLY_KEYBOARD_BUTTONS[1]["text"]
+BTN_CONTACT: str   = REPLY_KEYBOARD_BUTTONS[0]["text"]
 
 
 def persistent_reply_keyboard() -> ReplyKeyboardMarkup:
