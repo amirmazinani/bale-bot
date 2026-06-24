@@ -31,7 +31,7 @@ router = Router(name="reply_menu")
 
 @router.message(F.text == BTN_MAIN_MENU)
 async def on_main_menu_button(message: Message) -> None:
-    logger.info("user_id=%s opened Main Menu via reply keyboard", message.from_user.id)
+    logger.info("user_id=%s opened Main Menu via reply keyboard (text=%r)", message.from_user.id, message.text)
     fsm_store.reset(message.chat.id)
     s = SCREENS["main_menu"]
     await send_screen(message, s.text, s.keyboard)
@@ -39,6 +39,22 @@ async def on_main_menu_button(message: Message) -> None:
 
 @router.message(F.text == BTN_CONTACT)
 async def on_contact_button(message: Message) -> None:
-    logger.info("user_id=%s opened Contact via reply keyboard", message.from_user.id)
+    logger.info("user_id=%s opened Contact via reply keyboard (text=%r)", message.from_user.id, message.text)
+    s = SCREENS["contact"]
+    await send_screen(message, s.text, s.keyboard)
+
+
+# Fallback in case the button text changed but constants haven't been reloaded
+@router.message(F.text.in_(["🏠 Main Menu", "🏠 منوی اصلی"]))
+async def on_main_menu_fallback(message: Message) -> None:
+    logger.warning("Main menu fallback triggered for text=%r", message.text)
+    fsm_store.reset(message.chat.id)
+    s = SCREENS["main_menu"]
+    await send_screen(message, s.text, s.keyboard)
+
+
+@router.message(F.text.in_(["📞 Contact / Support", "📞 تماس / پشتیبانی"]))
+async def on_contact_fallback(message: Message) -> None:
+    logger.warning("Contact fallback triggered for text=%r", message.text)
     s = SCREENS["contact"]
     await send_screen(message, s.text, s.keyboard)
