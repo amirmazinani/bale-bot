@@ -168,6 +168,18 @@
           }
         ]
       ]
+    },
+    "product_detail": {
+      "text": "این صفحه محصول به صورت داینامیک توسط سیستم پر میشه.",
+      "parent": "products_list"
+    },
+    "pricing_detail": {
+      "text": "این صفحه قیمت به صورت داینامیک توسط سیستم پر میشه.",
+      "parent": "pricing_list"
+    },
+    "demo_for_product": {
+      "text": "این صفحه دمو محصول به صورت داینامیک توسط سیستم پر میشه.",
+      "parent": "product_detail"
     }
   },
   "products": [
