@@ -9,12 +9,12 @@
   "reply_keyboard": {
     "buttons": [
       {
-        "text": "🏠 منوی اصلی",
-        "action": "main_menu"
-      },
-      {
         "text": "📞 تماس / پشتیبانی",
         "action": "contact"
+      },
+      {
+        "text": "🏠 منوی اصلی",
+        "action": "main_menu"
       }
     ]
   },
